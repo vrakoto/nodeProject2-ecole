@@ -1,4 +1,6 @@
 const BookModel = require('../models/Book')
+const dayjs = require('dayjs')
+const now = dayjs().format('DD-MM-YYYY à HH:MM:ss')
 
 module.exports = {
     createBook: (req, res) => {
@@ -12,37 +14,44 @@ module.exports = {
                     general: "Le(s) id de author et/ou publisher ne sont/n'est pas correct",
                     message: err,
                 });
-            } else {
-                return res.status(201).json({
-                    status: 201,
-                    message: "Book created successfully !",
-                    user: user
-                })
             }
+
+            return res.status(201).json({
+                status: 201,
+                message: "Book created successfully !",
+                user: user
+            })
         })
     },
 
     editBook: (req, res) => {
-        const {_id, firstname, lastname, age} = req.body
+        const {_id, title, description, author, publisher} = req.body
 
-        AuthorModel.findByIdAndUpdate(_id,
+        BookModel.findByIdAndUpdate(_id,
             {
-                firstname,
-                lastname,
-                age
+                title,
+                description,
+                author,
+                publisher
             },
-        (err, author) => {
+        (err, result) => {
             if (err) {
                 return res.status(500).json({
                     status: 500,
-                    general: "Internal error while updating the author",
+                    general: "Internal error while updating the book",
                     description: err
                 })
+            } else if (!result) {
+                return res.status(404).json({
+                    status: 404,
+                    message: "The book doesn't exist"
+                })
             }
+
             return res.status(201).json({
                 status: 201,
-                general: "Author updated ! (see your db's collection)",
-                author
+                general: "Book updated ! (see your db's collection)",
+                result
             })
         })
     },
@@ -50,18 +59,55 @@ module.exports = {
     deleteBook: (req, res) => {
         const {_id} = req.body
 
-        AuthorModel.findByIdAndDelete(_id, (err, result) => {
+        BookModel.findByIdAndDelete(_id, (err, result) => {
             if (err) {
                 return res.status(500).json({
                     status: 500,
-                    general: "Internal error while deleting the author",
+                    general: "Internal error while deleting the book",
                     description: err
                 })
+            } else if (!result) {
+                return res.status(404).json({
+                    status: 404,
+                    general: "The book doesn't exist"
+                })
             }
+
             return res.status(201).json({
                 status: 201,
-                general: "Author deleted successfully !",
+                general: "Book deleted successfully !",
                 result
+            })
+        })
+    },
+
+    getBook: (req, res) => {
+        const {_id} = req.body
+
+        BookModel.findById(_id, (err, result) => {
+            if (err) {
+                return res.status(500).json({
+                    status: 500,
+                    general: "Internal error while searching for the book",
+                    description: err
+                })
+            } else if (!result) {
+                return res.status(404).json({
+                    status: 404,
+                    message: "The book doesn't exist"
+                })
+            }
+            
+            return res.status(201).json({
+                status: 201,
+                general: "Book found successfully !",
+                result: {
+                    title: result.title,
+                    description: result.description,
+                    publication_date: now,
+                    author: result.author,
+                    publisher: result.publisher
+                }
             })
         })
     }
