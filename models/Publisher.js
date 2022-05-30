@@ -1,10 +1,9 @@
 const {Schema, model} = require('mongoose')
 
 const Publisher = new Schema({
-    name: String,
-    creation_date : Date
-});
+    name: String
+}, {timestamp: true});
 
-const PublisherModel = model('Publisher', Publisher);
+const PublisherModel = model('Publisher', Publisher)
 
 module.exports = PublisherModel

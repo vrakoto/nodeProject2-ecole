@@ -1,21 +1,19 @@
 const AuthorModel = require('../models/Author')
+// const {BookModel} = require('../models/Book')
 
 module.exports = {
     createAuthor: (req, res) => {
-        const Author = new AuthorModel({
-            firstname: "John",
-            lastname: "Doe",
-            age: 30
-        })
+        const {firstname, lastname, age} = req.body
 
-        Author.save((err, user) => {
+        const author = new AuthorModel({firstname, lastname, age})
+        author.save((err, user) => {
             if (err) {
-                res.status(500).json({
+                return res.status(500).json({
                     status: 500,
                     message: err,
                 });
             } else {
-                res.status(201).json({
+                return res.status(201).json({
                     status: 201,
                     message: "Author created successfully !",
                     user: user
@@ -25,11 +23,9 @@ module.exports = {
     },
 
     editAuthor: (req, res) => {
-        const {idAuthor, firstname, lastname, age} = req.body
+        const {_id, firstname, lastname, age} = req.body
 
-        console.log(idAuthor, firstname);
-
-        AuthorModel.findByIdAndUpdate(idAuthor,
+        AuthorModel.findByIdAndUpdate(_id,
             {
                 firstname,
                 lastname,
@@ -45,31 +41,27 @@ module.exports = {
             }
             return res.status(201).json({
                 status: 201,
-                general: "Author updated !",
+                general: "Author updated ! (see your db's collection)",
                 author
             })
         })
     },
 
     deleteAuthor: (req, res) => {
-        const idArticle = req.params.id
+        const {_id} = req.body
 
-        ArticleModel.findByIdAndDelete(idArticle, (err, result) => {
+        AuthorModel.findByIdAndDelete(_id, (err, result) => {
             if (err) {
-                req.session.toast = {
+                return res.status(500).json({
                     status: 500,
-                    general: "Internal error suppression de l'article",
+                    general: "Internal error while deleting the author",
                     description: err
-                }
+                })
             }
-
-            req.session.toast = "Article supprimé."
-            UserModel.findById(result.author, (err, user) => {
-                if (!user) {
-                    return res.redirect('/')
-                } else {
-                    return res.redirect(`/user/${result.author}`)
-                }
+            return res.status(201).json({
+                status: 201,
+                general: "Author deleted successfully !",
+                result
             })
         })
     }
